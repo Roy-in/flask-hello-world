@@ -4,6 +4,10 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return "PPFD API Running"
+    
 # โหลดโมเดล
 model_pack = joblib.load('ppfd_production_model.joblib')
 et_model = model_pack['et_model']
