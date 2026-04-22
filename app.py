@@ -28,8 +28,7 @@ def home():
         
             x_log = np.log(np.array(sensors) + 1)
         
-            f7_fvis = x_log[6] * x_log[11]
-            x_input = np.append(x_log, f7_fvis).reshape(1, -1)
+            x_input = np.append(x_log).reshape(1, -1)
         
             p1 = et_model.predict(x_input)[0]
             p2 = hgbr_model.predict(x_input)[0]
