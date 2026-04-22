@@ -1,17 +1,51 @@
 import joblib
 import numpy as np
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return "PPFD API Running"
-    
 # โหลดโมเดล
 model_pack = joblib.load('ppfd_production_model.joblib')
 et_model = model_pack['et_model']
 hgbr_model = model_pack['hgbr_model']
+
+# 🟢 หน้าเว็บ
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    result = None
+
+    if request.method == 'POST':
+        try:
+            sensors = [float(request.form[f'f{i}']) for i in range(1, 13)]
+
+            x_log = np.log(np.array(sensors) + 1)
+            f7_fvis = x_log[6] * x_log[11]
+            x_input = np.append(x_log, f7_fvis).reshape(1, -1)
+
+            p1 = et_model.predict(x_input)[0]
+            p2 = hgbr_model.predict(x_input)[0]
+            res = np.exp(p1 * 0.6 + p2 * 0.4) - 1
+
+            result = round(float(res), 2)
+        except:
+            result = "Error"
+
+    return render_template_string("""
+    <h2>PPFD Predictor</h2>
+    <form method="post">
+        {% for i in range(1,13) %}
+            F{{i}}: <input name="f{{i}}" type="number" step="any"><br>
+        {% endfor %}
+        <br>
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if result is not none %}
+        <h3>Result: {{ result }}</h3>
+    {% endif %}
+    """, result=result)
+    
+
 
 @app.route('/predict', methods=['POST'])
 def predict():
