@@ -45,7 +45,7 @@ def home():
     <h2>PPFD Predictor</h2>
     <form method="post">
         {% for i in range(1,13) %}
-            F{{i}}: <input name="f{{i}}" type="number" step="any"><br>
+            F{{i}}: <input name="f{{i}}" type="number" step="any" required><br>
         {% endfor %}
         <br>
         <button type="submit">Predict</button>
