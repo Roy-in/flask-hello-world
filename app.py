@@ -28,7 +28,7 @@ def predict():
         p2 = hgbr_model.predict(x_input)[0]
         
         res = np.exp(p1 * 0.6 + p2 * 0.4) - 1
-        return str(round(float(res), 2))
+        return jsonify({"ppfd": round(float(res), 2)})
     except:
         return "Error", 400
 
