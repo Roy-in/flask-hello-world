@@ -16,19 +16,30 @@ def home():
 
     if request.method == 'POST':
         try:
-            sensors = [float(request.form[f'f{i}']) for i in range(1, 13)]
-
+            sensors = []
+            for i in range(1, 13):
+                val = request.form.get(f'f{i}')
+                if val == "" or val is None:
+                    raise ValueError(f"Missing value f{i}")
+                sensors.append(float(val))
+        
+            if any(s < 0 for s in sensors):
+                raise ValueError("Sensor must be >= 0")
+        
             x_log = np.log(np.array(sensors) + 1)
+        
             f7_fvis = x_log[6] * x_log[11]
             x_input = np.append(x_log, f7_fvis).reshape(1, -1)
-
+        
             p1 = et_model.predict(x_input)[0]
             p2 = hgbr_model.predict(x_input)[0]
+        
             res = np.exp(p1 * 0.6 + p2 * 0.4) - 1
-
+        
             result = round(float(res), 2)
-        except:
-            result = "Error"
+        
+        except Exception as e:
+            result = str(e)
 
     return render_template_string("""
     <h2>PPFD Predictor</h2>
